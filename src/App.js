@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import './App.css';
+import { VideoPreview } from './components/VideoPreview';
 
 function App() {
   const [videoSrc, setVideoSrc] = useState('');
@@ -25,7 +26,8 @@ function App() {
     ffmpeg.FS('writeFile', 'test.avi', await fetchFile(URL.createObjectURL(file)));
     let files = ffmpeg.FS('readdir', '/');
     console.log(files);
-    await ffmpeg.run('-i', 'test.avi', 'test.mp4');
+    const info = await ffmpeg.run('-i', 'test.avi', 'test.mp4');
+    console.log(info);
     setMessage('Complete transcoding');
     const data = ffmpeg.FS('readFile', 'test.mp4');
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
@@ -65,12 +67,6 @@ function App() {
   //   ffmpeg.setProgressCallback(updateProgress);
   // }, [ffmpeg]);
 
-  const videoRef = useRef(null);
-
-  const handleVideoLoaded = () => {
-    console.log(videoRef.current.duration);
-    setDuration(videoRef.current.duration);
-  };
 
   const [file, setFile] = useState(null);
 
@@ -89,7 +85,7 @@ function App() {
   return (
     <div className="App">
       <p />
-      <video ref={videoRef} onLoadedMetadata={handleVideoLoaded} src={videoSrc} controls></video>
+      <VideoPreview videoSrc={videoSrc} setDuration={setDuration}></VideoPreview>
       <br />
       <button onClick={doTranscode}>Start</button>
       <p>{message}</p>
