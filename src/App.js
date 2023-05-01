@@ -4,13 +4,29 @@ import './App.css';
 import { VideoPreview } from './components/VideoPreview';
 
 function App() {
-  const [videoSrc, setVideoSrc] = useState('');
+  //1. Upload video
+  const [file, setFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // access properties of 'file' state
+    console.log(file.name);
+    console.log(file.type);
+    console.log(file.size);
+  };
+
   const [message, setMessage] = useState('Click Start to transcode');
   const [progress, setProgress] = useState(0);
   const [startTrim, setStartTrim] = useState(0);
   const [endTrim, setEndTrim] = useState(100);
   const [duration, setDuration] = useState(0);
-
+  
+  //2. Transcode video
+  const [videoSrc, setVideoSrc] = useState('');
   const [ffmpeg, setFFmpeg] = useState(
     createFFmpeg({
       log: true,
@@ -32,6 +48,10 @@ function App() {
     const data = ffmpeg.FS('readFile', 'test.mp4');
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
   };
+
+  const [subSize, setSubSize] = useState(0);
+  const [subColor, setSubColor] = useState('white');
+  const [subTitles, setSubTitles] = useState([]);
 
   const doTrim = async () => {
     let files = ffmpeg.FS('readdir', '/');
@@ -68,26 +88,18 @@ function App() {
   // }, [ffmpeg]);
 
 
-  const [file, setFile] = useState(null);
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // access properties of 'file' state
-    console.log(file.name);
-    console.log(file.type);
-    console.log(file.size);
-  };
 
   return (
     <div className="App">
-      <p />
+      <br />
       <VideoPreview videoSrc={videoSrc} setDuration={setDuration}></VideoPreview>
       <br />
-      <button onClick={doTranscode}>Start</button>
+      <form onSubmit={handleSubmit}>
+        <input type="file" onChange={handleFileChange} />
+        <button type="submit">Upload</button>
+      </form>
+      <button onClick={doTranscode}>Load Video</button>
       <p>{message}</p>
       <br />
       <input type="range" min="0" max="100" value={startTrim} onChange={handleStartTrimChange} />
@@ -95,10 +107,6 @@ function App() {
       <br />
       <button onClick={doTrim}>Trim Video</button>
       <p>{progress.toFixed(2) * 100}%</p>
-      <form onSubmit={handleSubmit}>
-        <input type="file" onChange={handleFileChange} />
-        <button type="submit">Upload</button>
-      </form>
     </div>
   );
 }
