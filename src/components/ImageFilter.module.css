@@ -1,0 +1,11 @@
+.container {
+    height: 200px; /* Set a fixed height */
+    overflow-y: scroll; /* Set overflow-y to scroll */
+    border: 1px solid #ccc; /* Add a grey border */
+    max-width: 50%;
+    margin: auto;
+}
+
+.content {
+    padding: 2px; /* Add padding for spacing */
+}

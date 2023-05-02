@@ -3,6 +3,8 @@ import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import './App.css';
 import { VideoPreview } from './components/VideoPreview';
 import { SubtitleEditor } from './components/SubtitleEditor';
+import { ImageUploader } from './components/ImageUploader';
+import { ImageFilter } from './components/ImageFilter';
 
 function App() {
   //1. Upload video
@@ -50,6 +52,7 @@ function App() {
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
   };
 
+  //3. subtitle
   const [subSize, setSubSize] = useState(30);
   const [subColor, setSubColor] = useState('#ffffff');
   const [subtitles, setSubtitles] = useState([]);
@@ -82,6 +85,11 @@ function App() {
     const data = ffmpeg.FS('readFile', 'sub.mp4');
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
   };
+
+  //4.image upload
+  const [imageUrls, setImageUrls] = useState([]);
+  const [images, setImages] = useState([]);
+
 
   const doTrim = async () => {
     let files = ffmpeg.FS('readdir', '/');
@@ -123,7 +131,7 @@ function App() {
   return (
     <div className="App">
       <br />
-      <VideoPreview videoSrc={videoSrc} setDuration={setDuration} subtitles={subtitles} subColor={subColor} subSize={subSize}></VideoPreview>
+      <VideoPreview videoSrc={videoSrc} setDuration={setDuration} subtitles={subtitles} subColor={subColor} subSize={subSize} images={images}></VideoPreview>
       <br />
       <form onSubmit={handleSubmit}>
         <input type="file" onChange={handleFileChange} />
@@ -134,6 +142,10 @@ function App() {
       <br/>
       <SubtitleEditor subSize={subSize} setSubSize={setSubSize} subColor={subColor} setSubColor={setSubColor} subtitles={subtitles} setSubtitles={setSubtitles} selectedLine={selectedLine} setSelectedLine={setSelectedLine}/>
       <br />
+      <ImageUploader imageUrls={imageUrls} setImageUrls={setImageUrls} ffmpeg={ffmpeg}></ImageUploader>
+      <br/>
+      <ImageFilter subtitles={images} setSubtitles={setImages} imageUrls={imageUrls} ></ImageFilter>
+      <br/>
       <input type="range" min="0" max="100" value={startTrim} onChange={handleStartTrimChange} />
       <input type="range" min="0" max="100" value={endTrim} onChange={handleEndTrimChange} />
       <br />
