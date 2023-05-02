@@ -3,16 +3,21 @@ import { useState } from 'react';
 
 export function ImageUploader({imageUrls, setImageUrls, ffmpeg}) {
 
+    const [file1,setFile1] = useState(null);
     const [files, setFiles] = useState([]);
-    
-    const handleFileChange = async (e) => {
-        setFiles([...files,e.target.files[0]]);
-        setImageUrls([...imageUrls,URL.createObjectURL(files[files.length-1])]);
-        ffmpeg.FS('writeFile', 'test'+`${files.length-1}` + '.png', await fetchFile(imageUrls[files.length-1]));
+
+
+    const handleFileChange1 = (e) => {
+        console.log(e.target.files[0]);
+        setFile1(e.target.files[0]);
+        console.log(file1);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit1 = async (e) => {
         e.preventDefault();
+        setFiles([...files,file1]);
+        setImageUrls([...imageUrls,URL.createObjectURL(files[files.length-1])]);
+        ffmpeg.FS('writeFile', 'test'+`${files.length-1}` + '.png', await fetchFile(URL.createObjectURL(files[files.length-1])));
         // access properties of 'file' state
         console.log(files[files.length-1].name);
         console.log(files[files.length-1].type);
@@ -29,8 +34,8 @@ export function ImageUploader({imageUrls, setImageUrls, ffmpeg}) {
                 </div>
             ))}
         </div>
-        <form onSubmit={handleSubmit}>
-            <input type="file" onChange={handleFileChange} />
+        <form onSubmit={handleSubmit1}>
+            <input type="file" onChange={handleFileChange1} />
             <button type="submit">Upload</button>
         </form>
         </>

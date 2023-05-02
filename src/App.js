@@ -90,6 +90,56 @@ function App() {
   const [imageUrls, setImageUrls] = useState([]);
   const [images, setImages] = useState([]);
 
+  // const addImageFilter = async () => {
+  //   let command = "-i test.mp4 ";
+  //   for(let i = 0; i < images.length; i++) {
+  //     command += `-i test${images[i].id}.png `;
+  //   }
+  //   command += `-filter_complex `;
+  //   command += `[0:v]split=${images.length}`;
+  //   for(let i = 0; i < images.length; i++) {
+  //     command += `[v${i}]`;
+  //   }
+  //   command += '; ';
+  //   for(let i = 0; i < images.length; i++) {
+  //     command += `[v${i}]overlay=(W-w)/2:(H-h)/2:enable='between(t,${images[i].start},${images[i].end})'[out${i}]; `;
+  //   }
+  //   for(let i = 0; i < images.length; i++) {
+  //     command += `-map [out${i}] `; 
+  //   }
+  //   command += "image.mp4";
+  //   await ffmpeg.run(command);
+  //   const data = ffmpeg.FS('readFile', 'image.mp4');
+  //   setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
+  // }
+
+  // const [dl, setDl] = useState(undefined);
+  const addImageFilter = async () => {
+    /**
+     * ffmpeg -y -i input.mp4 -i image.png \
+      -filter_complex "[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable='between(t,5,10)'" \
+      -c:v libx264 -crf 18 -preset veryfast input.mp4
+     */
+    let files = ffmpeg.FS('readdir', '/');
+    console.log(files);
+    // const dataq = ffmpeg.FS('readFile', 'test1.png');
+    // setDl(URL.createObjectURL(new Blob([dataq.buffer], { type: 'image/png' })));
+    // await ffmpeg.run('-i', 'test.mp4', '-i', 'test0.png', '-filter_complex', '[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,0,3)\'', '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'image.mp4');
+    
+
+    let current = 0;
+    for(let i = 0; i < images.length; i++) {
+      if(current===0) {
+        await ffmpeg.run('-i', 'test.mp4', '-i', `test${images[i].id}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'image.mp4');
+      } else if (current===1) {
+        await ffmpeg.run('-i', 'image.mp4', '-i', `test${images[i].id}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'test.mp4');
+      }
+      current===0?current=1:current=0;
+    }
+    const data = ffmpeg.FS('readFile', `${current===0?'test.mp4':'image.mp4'}`);
+    console.log(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
+    setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
+  }
 
   const doTrim = async () => {
     let files = ffmpeg.FS('readdir', '/');
@@ -151,7 +201,10 @@ function App() {
       <br />
       <button onClick={doTrim}>Trim Video</button>
       <button onClick={addSubtitle}>Add Subtitle</button>
+      <button onClick={addImageFilter}>Add Image Filter</button>
+      
       <p>{progress.toFixed(2) * 100}%</p>
+      {/* <a href={dl} download={"1.png"}>dl</a> */}
     </div>
   );
 }

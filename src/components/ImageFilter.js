@@ -6,7 +6,7 @@ export function ImageFilter({ imageUrls, subtitles, setSubtitles }) {
     const [start, setStart] = useState(0);
     const [end, setEnd] = useState(0);
     const [text, setText] = useState(0);
-    const [size, setSize] = useState(0);
+    const [size, setSize] = useState(100);
 
     const findPositionOnEnd = (start) => {
         if(subtitles.length === 0) return 0;
@@ -22,7 +22,7 @@ export function ImageFilter({ imageUrls, subtitles, setSubtitles }) {
 
     const insertAndConcat = (index, start, end, text) => {   
         let newSubtitles = subtitles.slice(0, index);
-        newSubtitles.push({start: start, end: end, text: imageUrls[text], size:size});
+        newSubtitles.push({start: start, end: end, text: imageUrls[text], size:size, id: text});
         newSubtitles = newSubtitles.concat(subtitles.slice(index));
         setSubtitles(newSubtitles);
     }
@@ -31,7 +31,7 @@ export function ImageFilter({ imageUrls, subtitles, setSubtitles }) {
 
         let index = findPositionOnEnd(start);
         if(getStart(index)===undefined){
-            let newSubtitles = [...subtitles, {start: start, end: end, text: imageUrls[text], size: size}];
+            let newSubtitles = [...subtitles, {start: start, end: end, text: imageUrls[text], size: size, id: text}];
             setSubtitles(newSubtitles);
             return;
         }else if ( getStart(index) >= end ){
