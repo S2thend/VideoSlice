@@ -32,7 +32,7 @@ export function VideoPreview({videoSrc,setDuration,subtitles,subColor,subSize}){
             <div className={styles.container} style={{position: "relative"}}>
                 <video ref={videoRef} onLoadedMetadata={handleVideoLoaded} src={videoSrc} onTimeUpdate={handleSubtitle} controls></video>
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png" alt="placeholder" />
-                <div className={styles.subtitle} style={{color:subColor, fontSize:subSize}}>{currentSubtitle}</div>
+                <div className={styles.subtitle} style={{color:subColor, fontSize:subSize+"px"}}>{currentSubtitle}</div>
             </div>
         </>
     )

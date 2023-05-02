@@ -50,7 +50,7 @@ function App() {
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
   };
 
-  const [subSize, setSubSize] = useState(3);
+  const [subSize, setSubSize] = useState(30);
   const [subColor, setSubColor] = useState('#ffffff');
   const [subtitles, setSubtitles] = useState([]);
   const [selectedLine, setSelectedLine] = useState(undefined);
