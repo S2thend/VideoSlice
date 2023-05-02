@@ -55,6 +55,34 @@ function App() {
   const [subtitles, setSubtitles] = useState([]);
   const [selectedLine, setSelectedLine] = useState(undefined);
 
+  const addSubtitle = async () => {
+    //convert subtitle list to string for srt file
+    let srt = '';
+    for (let i = 0; i < subtitles.length; i++) {
+      srt += `${i + 1}\n${formatTime(subtitles[i].start)},000 --> ${formatTime(subtitles[i].end)},000\n${subtitles[i].text}\n\n`;
+    }
+    ffmpeg.FS('writeFile', 'sub.srt', await fetchFile(URL.createObjectURL(new Blob([srt], { type: 'text/srt' }))));
+    ffmpeg.FS('writeFile', 'arail.ttf', await fetchFile("http://localhost:3000/arail.ttf"));
+    ffmpeg.FS('writeFile', 'arailbd.ttf', await fetchFile("http://localhost:3000/arailbd.ttf"));
+    ffmpeg.FS('writeFile', 'arial.ttf', await fetchFile("http://localhost:3000/arial.ttf"));
+    ffmpeg.FS('writeFile', 'arialbd.ttf', await fetchFile("http://localhost:3000/arialbd.ttf"));
+    ffmpeg.FS('writeFile', 'arialbi.ttf', await fetchFile("http://localhost:3000/arialbi.ttf"));
+    ffmpeg.FS('writeFile', 'ariali.ttf', await fetchFile("http://localhost:3000/ariali.ttf"));
+    ffmpeg.FS('writeFile', 'ARIALN.TTF', await fetchFile("http://localhost:3000/ARIALN.TTF"));
+    ffmpeg.FS('writeFile', 'ARIALNB.TTF', await fetchFile("http://localhost:3000/ARIALNB.TTF"));
+    ffmpeg.FS('writeFile', 'ARIALNBI.TTF', await fetchFile("http://localhost:3000/ARIALNBI.TTF"));
+    ffmpeg.FS('writeFile', 'ARIALNI.TTF', await fetchFile("http://localhost:3000/ARIALNI.TTF"));
+    ffmpeg.FS('writeFile', 'ariblk.ttf', await fetchFile("http://localhost:3000/ariblk.ttf"));
+    console.log(URL.createObjectURL(new Blob([srt], { type: 'text/srt' })));
+    let files = ffmpeg.FS('readdir', '/');
+    console.log(files);
+    //add subtitle to bottom of the video
+    await ffmpeg.run('-i', 'test.mp4', '-vf', `subtitles=sub.srt:fontsdir=/:force_style='Fontsize=${subSize},PrimaryColour=&H${subColor.slice(1)},y=H-4,align=center'`, 'sub.mp4');
+    console.log(`subtitles=sub.srt:force_style='Fontsize=${subSize},PrimaryColour=&H${subColor.slice(1)}'`)
+    const data = ffmpeg.FS('readFile', 'sub.mp4');
+    setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
+  };
+
   const doTrim = async () => {
     let files = ffmpeg.FS('readdir', '/');
     console.log(files);
@@ -110,6 +138,7 @@ function App() {
       <input type="range" min="0" max="100" value={endTrim} onChange={handleEndTrimChange} />
       <br />
       <button onClick={doTrim}>Trim Video</button>
+      <button onClick={addSubtitle}>Add Subtitle</button>
       <p>{progress.toFixed(2) * 100}%</p>
     </div>
   );
