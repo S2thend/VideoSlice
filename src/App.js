@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import './App.css';
 import { VideoPreview } from './components/VideoPreview';
+import { SubtitleEditor } from './components/SubtitleEditor';
 
 function App() {
   //1. Upload video
@@ -49,9 +50,10 @@ function App() {
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
   };
 
-  const [subSize, setSubSize] = useState(0);
-  const [subColor, setSubColor] = useState('white');
-  const [subTitles, setSubTitles] = useState([]);
+  const [subSize, setSubSize] = useState(3);
+  const [subColor, setSubColor] = useState('#ffffff');
+  const [subtitles, setSubtitles] = useState([]);
+  const [selectedLine, setSelectedLine] = useState(undefined);
 
   const doTrim = async () => {
     let files = ffmpeg.FS('readdir', '/');
@@ -93,7 +95,7 @@ function App() {
   return (
     <div className="App">
       <br />
-      <VideoPreview videoSrc={videoSrc} setDuration={setDuration}></VideoPreview>
+      <VideoPreview videoSrc={videoSrc} setDuration={setDuration} subtitles={subtitles} subColor={subColor} subSize={subSize}></VideoPreview>
       <br />
       <form onSubmit={handleSubmit}>
         <input type="file" onChange={handleFileChange} />
@@ -101,6 +103,8 @@ function App() {
       </form>
       <button onClick={doTranscode}>Load Video</button>
       <p>{message}</p>
+      <br/>
+      <SubtitleEditor subSize={subSize} setSubSize={setSubSize} subColor={subColor} setSubColor={setSubColor} subtitles={subtitles} setSubtitles={setSubtitles} selectedLine={selectedLine} setSelectedLine={setSelectedLine}/>
       <br />
       <input type="range" min="0" max="100" value={startTrim} onChange={handleStartTrimChange} />
       <input type="range" min="0" max="100" value={endTrim} onChange={handleEndTrimChange} />
