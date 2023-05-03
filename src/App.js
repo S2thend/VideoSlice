@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useRef } from 'react';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import './App.css';
 import { VideoPreview } from './components/VideoPreview';
@@ -23,9 +23,8 @@ function App() {
   };
 
   const [message, setMessage] = useState('Click Start to transcode');
-  const [progress, setProgress] = useState(0);
   const [startTrim, setStartTrim] = useState(0);
-  const [endTrim, setEndTrim] = useState(100);
+  const [endTrim, setEndTrim] = useState(3);
   const [duration, setDuration] = useState(0);
   
   //2. Transcode video
@@ -119,6 +118,8 @@ function App() {
   // }
 
   // const [dl, setDl] = useState(undefined);
+
+  const [currentImageFilterFile,setCurrentImageFilterFile] = useState(undefined);
   const addImageFilter = async () => {
     /**
      * ffmpeg -y -i input.mp4 -i image.png \
@@ -147,17 +148,22 @@ function App() {
     const data = ffmpeg.FS('readFile', `${current===0?'test.mp4':'image.mp4'}`);
     // console.log(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
+    setCurrentImageFilterFile(current);
   }
 
+  const downloadRef = useRef(null);
   const doTrim = async () => {
     let files = ffmpeg.FS('readdir', '/');
     console.log(files);
-    await ffmpeg.run('-ss', `${formatTime(startTrim * duration / 100)}`, '-i', 'test.mp4', '-to', `${formatTime((endTrim - startTrim) * duration / 100)}`, '-c', 'copy', 'trimmed.mp4');
+    await ffmpeg.run('-ss', `${startTrim}`, '-i', `${currentImageFilterFile===1?"image.mp4":"test.mp4"}`, '-to', `${endTrim - startTrim}`, '-c', 'copy', 'trimmed.mp4');
     setMessage('Video trimmed successfully!');
     files = ffmpeg.FS('readdir', '/');
     console.log(files);
     const data = ffmpeg.FS('readFile', 'trimmed.mp4');
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
+    downloadRef.current.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+    downloadRef.current.download = 'out.mp4';
+    downloadRef.current.click();
   };
 
   const handleStartTrimChange = (event) => {
@@ -204,18 +210,18 @@ function App() {
       <br/>
       <ImageFilter subtitles={images} setSubtitles={setImages} imageUrls={imageUrls} ></ImageFilter>
       <br/>
-      <input type="range" min="0" max="100" value={startTrim} onChange={handleStartTrimChange} />
-      <input type="range" min="0" max="100" value={endTrim} onChange={handleEndTrimChange} />
+      <p>from</p>
+      <input value={startTrim} onChange={handleStartTrimChange} /> <p>seconds to</p>
+      <input value={endTrim} onChange={handleEndTrimChange} /> <p>seconds</p>
       <br />
-      <button onClick={doTrim}>Trim Video</button>
+      <button onClick={doTrim}>Trim Video And Download</button>
       <button onClick={addSubtitle}>Add Subtitle</button>
       <button onClick={addImageFilter}>Add Image Filter</button>
-      
-      <p>{progress.toFixed(2) * 100}%</p>
+      <a style={{display:'none'}} ref={downloadRef} ></a>
+
       {/* <a href={dl} download={"1.png"}>dl</a> */}
     </div>
   );
 }
-
 
 export default App;

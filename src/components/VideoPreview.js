@@ -61,6 +61,7 @@ export function VideoPreview({videoSrc,setDuration,subtitles,subColor,subSize,im
                 }
                 <div className={styles.subtitle} style={{color:subColor, fontSize:subSize+"px"}}>{currentSubtitle}</div>
             </div>
+            <br/>
             <button onClick={()=>{videoRef.current.play()}}>play</button>
         </>
     )
