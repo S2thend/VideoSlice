@@ -140,7 +140,7 @@ function App() {
       current===0?current=1:current=0;
     }
     const data = ffmpeg.FS('readFile', `${current===0?'test.mp4':'image.mp4'}`);
-    console.log(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
+    // console.log(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
   }
 

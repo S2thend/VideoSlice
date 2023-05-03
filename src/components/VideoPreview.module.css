@@ -9,12 +9,13 @@
     pointer-events: none;
 }
 
-.container {
+.video-wrapper {
     display: inline-block;
     text-align: center;
+    overflow: hidden;
 }
 
-.container img {
+.video-wrapper img {
     position: absolute;
     top: 50%;
     left: 50%;
