@@ -38,18 +38,23 @@ function App() {
 
   const doTranscode = async () => {
     setMessage('Loading ffmpeg-core.js');
-    await ffmpeg.load();
-    setFFmpeg(ffmpeg);
+    if(!ffmpeg.isLoaded()){
+      await ffmpeg.load();
+      setFFmpeg(ffmpeg);
+    }
     setMessage('Start transcoding');
-    console.log(ffmpeg.isLoaded());
-    ffmpeg.FS('writeFile', 'test.avi', await fetchFile(URL.createObjectURL(file)));
-    let files = ffmpeg.FS('readdir', '/');
-    console.log(files);
-    const info = await ffmpeg.run('-i', 'test.avi', 'test.mp4');
-    console.log(info);
-    setMessage('Complete transcoding');
+    if (file.name.split('.').pop() === 'avi') {
+      ffmpeg.FS('writeFile', 'test.avi', await fetchFile(URL.createObjectURL(file)));
+      let files = ffmpeg.FS('readdir', '/');
+      console.log(files);
+      const info = await ffmpeg.run('-i', 'test.avi', 'test.mp4');
+      console.log(info);
+    }else if (file.name.split('.').pop() === 'mp4'){
+      ffmpeg.FS('writeFile', 'test.mp4', await fetchFile(URL.createObjectURL(file)));
+    }
     const data = ffmpeg.FS('readFile', 'test.mp4');
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
+    setMessage('Complete transcoding');
   };
 
   //3. subtitle
