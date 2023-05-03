@@ -126,13 +126,16 @@ function App() {
     // setDl(URL.createObjectURL(new Blob([dataq.buffer], { type: 'image/png' })));
     // await ffmpeg.run('-i', 'test.mp4', '-i', 'test0.png', '-filter_complex', '[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,0,3)\'', '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'image.mp4');
     
-
+    const splitUrl = (url) => {
+        let splitUrl = url.split('/');
+        return splitUrl[splitUrl.length-1];
+    }
     let current = 0;
-    for(let i = 0; i < images.length; i++) {
+    for(let i = 0; i < imageUrls.length; i++) {
       if(current===0) {
-        await ffmpeg.run('-i', 'test.mp4', '-i', `test${images[i].id}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'image.mp4');
+        await ffmpeg.run('-i', 'test.mp4', '-i', `${splitUrl(imageUrls[i])}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'image.mp4');
       } else if (current===1) {
-        await ffmpeg.run('-i', 'image.mp4', '-i', `test${images[i].id}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'test.mp4');
+        await ffmpeg.run('-i', 'image.mp4', '-i', `${splitUrl(imageUrls[i])}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'test.mp4');
       }
       current===0?current=1:current=0;
     }

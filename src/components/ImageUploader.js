@@ -6,11 +6,19 @@ export function ImageUploader({imageUrls, setImageUrls, ffmpeg}) {
     let file = null;
     const [files, setFiles] = useState([]);
 
+    const splitUrl = (url) => {
+        let splitUrl = url.split('/');
+        return splitUrl[splitUrl.length-1];
+    }
+
     const handleFileChange = async(e) => {
         // console.log(e.target.files[0]);
         file = e.target.files[0];
         setFiles([...files,file]);
-        setImageUrls([...imageUrls,URL.createObjectURL(file)]);
+        let url = URL.createObjectURL(file);
+        console.log(url);
+        setImageUrls([...imageUrls,url]);
+        ffmpeg.FS('writeFile', `${splitUrl(url)}.png`, await fetchFile(String(url)));
     };
 
     const handleSubmit = async (e) => {
@@ -19,7 +27,6 @@ export function ImageUploader({imageUrls, setImageUrls, ffmpeg}) {
         console.log(files[files.length-1].name);
         console.log(files[files.length-1].type);
         console.log(files[files.length-1].size);
-        ffmpeg.FS('writeFile', `test${files.length-1}.png`, await fetchFile(URL.createObjectURL(files[files.length-1])));
     };
 
 
@@ -27,7 +34,7 @@ export function ImageUploader({imageUrls, setImageUrls, ffmpeg}) {
         <>
         <div style={{display:"flex",alignItems:"center"}}>
             {imageUrls.map((url,index) => (
-                <div key={index} style={{display:"inline"}}>
+                <div key={index} style={{display:"inline", margin:'auto',maxWidth:"60%"}}>
                     <img src={url} alt="placeholder" style={{maxWidth:"50px",height:"auto"}} /><p>{index}</p>
                 </div>
             ))}
