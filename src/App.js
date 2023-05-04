@@ -17,12 +17,14 @@ function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // access properties of 'file' state
-    console.log(file.name);
-    console.log(file.type);
-    console.log(file.size);
+    if(file){
+      console.log(file.name);
+      console.log(file.type);
+      console.log(file.size);
+    }
   };
 
-  const [message, setMessage] = useState('Click Start to transcode');
+  const [message, setMessage] = useState('Click load video to start');
   const [startTrim, setStartTrim] = useState(0);
   const [endTrim, setEndTrim] = useState(3);
   const [duration, setDuration] = useState(0);
@@ -35,26 +37,33 @@ function App() {
     })
   );
 
+  const [isLoadComplete, setIsLoadComplete] = useState(false);
+
   const doTranscode = async () => {
+    if(!file){
+      alert('Please select a video file first');
+      return;
+    }
     setMessage('Loading ffmpeg-core.js');
     if(!ffmpeg.isLoaded()){
       await ffmpeg.load();
       setFFmpeg(ffmpeg);
     }
     setMessage('Start transcoding');
-    if (file.name.split('.').pop() === 'avi') {
-      ffmpeg.FS('writeFile', 'test.avi', await fetchFile(URL.createObjectURL(file)));
+    if (file.name.split('.').pop() !== 'mp4') {
+      ffmpeg.FS('writeFile', `test.${file.name.split('.').pop()}`, await fetchFile(URL.createObjectURL(file)));
       let files = ffmpeg.FS('readdir', '/');
       console.log(files);
-      const info = await ffmpeg.run('-i', 'test.avi', 'test.mp4');
+      setMessage('Transcoding please wait');
+      const info = await ffmpeg.run('-i', `test.${file.name.split('.').pop()}`, 'test.mp4');
       console.log(info);
     }else if (file.name.split('.').pop() === 'mp4'){
       ffmpeg.FS('writeFile', 'test.mp4', await fetchFile(URL.createObjectURL(file)));
-      await ffmpeg.run('-i', 'test.mp4', 'test.mp4');
     }
     const data = ffmpeg.FS('readFile', 'test.mp4');
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
     setMessage('Complete transcoding');
+    setIsLoadComplete(true);
   };
 
   //3. subtitle
@@ -141,9 +150,10 @@ function App() {
     console.log(images);
     for(let i = 0; i < images.length; i++) {
       if(current===0) {
-        await ffmpeg.run('-i', 'test.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable='between(t,${images[i].start},${images[i].end})'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast','image.mp4', "-y");
+        //TODO: mp4 decode encode still has bug here, scale down the image is not working yet
+        await ffmpeg.run('-i', 'sub.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable='between(t,${images[i].start},${images[i].end})'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast','image.mp4', "-y");
       } else if (current===1) {
-        await ffmpeg.run('-i', 'image.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable='between(t,${images[i].start},${images[i].end})'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'test.mp4', "-y");
+        await ffmpeg.run('-i', 'image.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable='between(t,${images[i].start},${images[i].end})'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'sub.mp4', "-y");
       }
       current===0?current=1:current=0;
     }
@@ -155,9 +165,11 @@ function App() {
 
   const downloadRef = useRef(null);
   const doTrim = async () => {
+    await addSubtitle();
+    await addImageFilter();
     let files = ffmpeg.FS('readdir', '/');
     console.log(files);
-    await ffmpeg.run('-ss', `${startTrim}`, '-i', `${currentImageFilterFile===1?"image.mp4":"test.mp4"}`, '-to', `${endTrim - startTrim}`, '-c', 'copy', 'trimmed.mp4');
+    await ffmpeg.run('-ss', `${startTrim}`, '-i', `${currentImageFilterFile===1?"image.mp4":"sub.mp4"}`, '-to', `${endTrim - startTrim}`, '-c', 'copy', 'trimmed.mp4');
     setMessage('Video trimmed successfully!');
     files = ffmpeg.FS('readdir', '/');
     console.log(files);
@@ -201,24 +213,28 @@ function App() {
       <br />
       <form onSubmit={handleSubmit}>
         <input type="file" onChange={handleFileChange} />
-        <button type="submit">Upload</button>
+        <button onClick={doTranscode}>Load Video</button>
       </form>
-      <button onClick={doTranscode}>Load Video</button>
       <p>{message}</p>
-      <br/>
-      <SubtitleEditor subSize={subSize} setSubSize={setSubSize} subColor={subColor} setSubColor={setSubColor} subtitles={subtitles} setSubtitles={setSubtitles} selectedLine={selectedLine} setSelectedLine={setSelectedLine}/>
-      <br />
-      <ImageUploader imageUrls={imageUrls} setImageUrls={setImageUrls} ffmpeg={ffmpeg}></ImageUploader>
-      <br/>
-      <ImageFilter subtitles={images} setSubtitles={setImages} imageUrls={imageUrls} ></ImageFilter>
-      <br/>
-      <p>from</p>
-      <input value={startTrim} onChange={handleStartTrimChange} /> <p>seconds to</p>
-      <input value={endTrim} onChange={handleEndTrimChange} /> <p>seconds</p>
-      <br />
-      <button onClick={doTrim}>Trim Video And Download</button>
-      <button onClick={addSubtitle}>Add Subtitle</button>
-      <button onClick={addImageFilter}>Add Image Filter</button>
+      {
+        isLoadComplete ?
+        <>
+          <br/>
+          <SubtitleEditor subSize={subSize} setSubSize={setSubSize} subColor={subColor} setSubColor={setSubColor} subtitles={subtitles} setSubtitles={setSubtitles} selectedLine={selectedLine} setSelectedLine={setSelectedLine}/>
+          <br />
+          <ImageUploader imageUrls={imageUrls} setImageUrls={setImageUrls} ffmpeg={ffmpeg}></ImageUploader>
+          <br/>
+          <ImageFilter subtitles={images} setSubtitles={setImages} imageUrls={imageUrls} ></ImageFilter>
+          <br/>
+          <p>from</p>
+          <input value={startTrim} onChange={handleStartTrimChange} /> <p>seconds to</p>
+          <input value={endTrim} onChange={handleEndTrimChange} /> <p>seconds</p>
+          <br />
+          <button onClick={doTrim}>Trim Video And Download</button>
+        </>:null
+      }
+      {/* <button onClick={addSubtitle}>Add Subtitle</button>
+      <button onClick={addImageFilter}>Add Image Filter</button> */}
       <a style={{display:'none'}} ref={downloadRef} ></a>
 
       {/* <a href={dl} download={"1.png"}>dl</a> */}
