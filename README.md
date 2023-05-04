@@ -1,3 +1,11 @@
+![](demo.gif)
+![](demo1.gif)
+![](demo2.gif)
+
+
+
+/public/out.mp4是用app导出的视频
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
