@@ -137,11 +137,12 @@ function App() {
         return splitUrl[splitUrl.length-1];
     }
     let current = 0;
-    for(let i = 0; i < imageUrls.length; i++) {
+    console.log(images);
+    for(let i = 0; i < images.length; i++) {
       if(current===0) {
-        await ffmpeg.run('-i', 'test.mp4', '-i', `${splitUrl(imageUrls[i])}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'image.mp4');
+        await ffmpeg.run('-i', 'test.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\',scale=${images[i].size}:${images[i].size}`, '-c:a', 'copy','-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'image.mp4', "-y");
       } else if (current===1) {
-        await ffmpeg.run('-i', 'image.mp4', '-i', `${splitUrl(imageUrls[i])}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'test.mp4');
+        await ffmpeg.run('-i', 'image.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=W-w:H-h:enable=\'between(t,${images[i].start},${images[i].end})\',scale=${images[i].size}:${images[i].size}`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'test.mp4', "-y");
       }
       current===0?current=1:current=0;
     }

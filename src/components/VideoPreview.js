@@ -57,7 +57,7 @@ export function VideoPreview({videoSrc,setDuration,subtitles,subColor,subSize,im
             <div className={styles.container} style={{position: "relative"}}>
                 <video ref={videoRef} onLoadedMetadata={handleVideoLoaded} src={videoSrc} onTimeUpdate={handleUpdate} controls></video>
                 {
-                    currentImage === "" ? null : <img src={currentImage} style={{}} alt="placeholder" />
+                    currentImage === "" ? null : <img src={currentImage} style={{width:`${currentImageSize}px`,height:`${currentImageSize}px`}} alt="placeholder" />
                 }
                 <div className={styles.subtitle} style={{color:subColor, fontSize:subSize+"px"}}>{currentSubtitle}</div>
             </div>
