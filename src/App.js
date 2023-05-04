@@ -50,6 +50,7 @@ function App() {
       console.log(info);
     }else if (file.name.split('.').pop() === 'mp4'){
       ffmpeg.FS('writeFile', 'test.mp4', await fetchFile(URL.createObjectURL(file)));
+      await ffmpeg.run('-i', 'test.mp4', 'test.mp4');
     }
     const data = ffmpeg.FS('readFile', 'test.mp4');
     setVideoSrc(URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })));
@@ -140,9 +141,9 @@ function App() {
     console.log(images);
     for(let i = 0; i < images.length; i++) {
       if(current===0) {
-        await ffmpeg.run('-i', 'test.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable=\'between(t,${images[i].start},${images[i].end})\',scale=${images[i].size}:${images[i].size}`, '-c:a', 'copy','-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'image.mp4', "-y");
+        await ffmpeg.run('-i', 'test.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable='between(t,${images[i].start},${images[i].end})'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast','image.mp4', "-y");
       } else if (current===1) {
-        await ffmpeg.run('-i', 'image.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=W-w:H-h:enable=\'between(t,${images[i].start},${images[i].end})\',scale=${images[i].size}:${images[i].size}`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'test.mp4', "-y");
+        await ffmpeg.run('-i', 'image.mp4', '-i', `${splitUrl(images[i].text)}.png`, '-filter_complex', `[0:v][1:v]overlay=(W-w)/2:(H-h)/2:enable='between(t,${images[i].start},${images[i].end})'`, '-c:v', 'libx264', '-crf', '18', '-preset', 'veryfast', 'test.mp4', "-y");
       }
       current===0?current=1:current=0;
     }

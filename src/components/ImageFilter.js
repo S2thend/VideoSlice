@@ -4,7 +4,7 @@ import styles from './ImageFilter.module.css'
 export function ImageFilter({ imageUrls, subtitles, setSubtitles }) {
 
     const [start, setStart] = useState(0);
-    const [end, setEnd] = useState(0);
+    const [end, setEnd] = useState(2);
     const [text, setText] = useState(0);
     const [size, setSize] = useState(100);
 
